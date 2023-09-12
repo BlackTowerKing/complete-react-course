@@ -1,55 +1,50 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   signInWithGooglePopup,
   createUserDocumentFromAuth,
-  signInAuthUserWithEmailAndPassword,
-} from '../../utils/firebase/firebase.utils';
+  signInUserWithEmailandPassword,
+} from "../../utils/firebase/firebase.utils";
 
-import FormInput from '../form-input/form-input.component';
-import Button from '../button/button.component';
-import './sign-in-form.styles.scss';
+import FormInput from "../form-input/form-input.component";
+import Button from "../button/button.component";
+import "./sign-in-form.styles.scss";
 
 const defaultFormFields = {
-  email: '',
-  password: '',
+  email: "",
+  password: "",
 };
 
 const SignInForm = () => {
   const [formFields, setFormFields] = useState(defaultFormFields);
+
   const { email, password } = formFields;
-
-  const logGoogleUser = async () => {
-    const { user } = await signInWithGooglePopup();
-    await createUserDocumentFromAuth(user);
-  };
-
   const resetFormFields = () => {
     setFormFields(defaultFormFields);
   };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
     setFormFields({ ...formFields, [name]: value });
+  };
+
+  const signInWithGoogle = async () => {
+    const { user } = await signInWithGooglePopup();
+    await createUserDocumentFromAuth(user);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
-      const response = await signInAuthUserWithEmailAndPassword(
-        email,
-        password
-      );
-
+      const { user } = await signInUserWithEmailandPassword(email, password);
       resetFormFields();
     } catch (err) {
       switch (err.code) {
-        case 'auth/wrong-password':
-          alert('Incorrect password for email');
+        case "auth/wrong-password":
+          alert("incorrect password");
           break;
-        case 'auht/user-not-found':
-          alert('no user associated with this email');
+        case "auth/user-not-found":
+          alert("no user");
           break;
         default:
           console.log(err);
@@ -58,37 +53,31 @@ const SignInForm = () => {
   };
 
   return (
-    <div className='sign-in-container'>
-      <h2>I already have an account</h2>
-      <p>Sing in with your email and password</p>
+    <form onSubmit={handleSubmit} className='sign-in-container'>
+      <FormInput
+        label='Email'
+        type='email'
+        onChange={handleChange}
+        name='email'
+        value={email}
+        required
+      />
 
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          label='email'
-          type='email'
-          id=''
-          required
-          onChange={handleChange}
-          name='email'
-          value={email}
-        />
-        <FormInput
-          label='password'
-          type='password'
-          id=''
-          required
-          onChange={handleChange}
-          name='password'
-          value={password}
-        />
-        <div className='buttons-container'>
-          <Button type='submit'>Sign in</Button>
-          <Button type='button' buttonType='google' onClick={logGoogleUser}>
-            Sign in with Google
-          </Button>
-        </div>
-      </form>
-    </div>
+      <FormInput
+        label='Password'
+        type='password'
+        onChange={handleChange}
+        name='password'
+        value={password}
+        required
+      />
+      <div className='buttons-container'>
+        <Button type='submit'>Sign In</Button>
+        <Button type='button' buttonType='google' onClick={signInWithGoogle}>
+          Sign in with Google Popup
+        </Button>
+      </div>
+    </form>
   );
 };
 
